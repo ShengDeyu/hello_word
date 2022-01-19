@@ -1,0 +1,47 @@
+from urllib import request
+import requests
+import re
+from urllib import parse
+import time
+
+
+def request_su(i):
+    headers = {
+        #要加入自己的UA
+
+    }
+    url = f'https://apps.game.qq.com/cgi-bin/ams/module/ishow/V1.0/query/workList_inc.cgi?activityId=2735&sVerifyCode=ABCD&sDataType=JSON&iListNum=20&totalpage=0&page={i}&iOrder=0&iSortNumClose=1&jsoncallback=jQuery17103966267856587882_1640686471547&iAMSActivityId=51991&_everyRead=true&iTypeId=2&iFlowId=267733&iActId=2735&iModuleId=2735&_=1640686471731'
+    #请求
+    response = requests.get(url,headers=headers)
+    text = response.text
+
+    return text
+
+
+#解析代码
+def get_contuen(html):
+    #取出代码和名字
+    nameList = re.findall(r'"sProdName":(.*?),', html)
+    urlList = re.findall(r'"sProdImgNo_8":(.*?),', html)
+    for name, url in zip(nameList, urlList):
+        # 解码、格式化
+        name = parse.unquote(name).replace('"', '')
+        url = parse.unquote(url).replace('"', '')[:-3] + '0'
+        request.urlretrieve(url, 'wanzheimg/{}.jpg'.format(name))
+        print('正在下载{}'.format(name))
+        print('等待3秒')
+        time.sleep(3)
+
+
+
+if __name__ == '__main__':
+    start = int(input('请输入起始页:'))
+    end = int(input('请输入结束页:'))
+    for i in range(start,end+1):
+        html = request_su(i)
+        get_contuen(html)
+    print('获取结束\n本次获取{0}页'.format(i))
+
+
+
+
